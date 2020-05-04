@@ -27,7 +27,7 @@ parser.add_argument('-lr', '--learning_rate', 	type=float, required=False, defau
 					help="Скорость обучения модели")
 
 					
-parser.add_argument('-ml', '--memory_limit', 	type=float, required=False, default=0.8,
+parser.add_argument('-ml', '--memory_limit', 	type=float, required=False, default=0.5,
 					help="Максимальная доля выделенной GPU памяти")
 
 
