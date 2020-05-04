@@ -1,7 +1,43 @@
-###################################################################################################
+############################################ Argparse #############################################
+
+import argparse
+
+parser = argparse.ArgumentParser('UNet model')
+
+
+parser.add_argument('-md', '--main_data_dir', 	type=str, 	required=False, default="../data/ADE20K_encoded/",
+					help="Главная папка с папками train и val")
+parser.add_argument('-cd', '--callbacks_dir', 	type=str, 	required=False, default="../callbacks/",
+					help="Папка, в которую будут записываться данные каждой модели")
+
+
+parser.add_argument('-is', '--img_shape', 		type=int, 	required=False, default=256,
+					help="Размер входного слоя сети")
+parser.add_argument('-bs', '--batch_size', 		type=int, 	required=False, default=4,
+					help="Количество объектов в каждом batch на обучении и валидации")
+parser.add_argument('-nc', '--num_classes', 	type=int, 	required=False, default=32,
+					help="Количество классов = количество каналов выходного слоя")
+
+
+parser.add_argument('-en', '--epoch_num', 		type=int, 	required=True,
+					help="Количество эпох обучения")
+parser.add_argument('-tc', '--train_coef', 		type=float, required=False, default=1.0,
+					help="Доля объектов обучающей выборки, которые будут использоваться в одной эпохе")
+parser.add_argument('-lr', '--learning_rate', 	type=float, required=False, default=0.0001,
+					help="Скорость обучения модели")
+
+					
+parser.add_argument('-ml', '--memory_limit', 	type=float, required=False, default=0.8,
+					help="Максимальная доля выделенной GPU памяти")
+
+
+args = parser.parse_args()
+
+############################################ Import ###############################################
 
 #System
 import os
+import sys
 import shutil
 
 #Base
@@ -31,7 +67,8 @@ from keras.applications.vgg16 import VGG16
 import tensorflow as tf
 from keras import backend as K
 config = tf.ConfigProto() 
-config.gpu_options.allow_growth = True
+#config.gpu_options.allow_growth = True
+config.gpu_options.per_process_gpu_memory_fraction = args.memory_limit
 sess = tf.Session(config=config) 
 K.set_session(sess)
 
@@ -40,9 +77,9 @@ seed = 99
 np.random.seed(seed)
 random.seed(seed)
 
-###################################################################################################
+############################################ Path #################################################
 
-main_data_dir = "../data/ADE20K_encoded/"
+main_data_dir = args.main_data_dir
 
 train_dir = main_data_dir + "train/"
 val_dir = main_data_dir + "val/"
@@ -53,27 +90,32 @@ mask_train_dir = train_dir + "mask/"
 img_val_dir = val_dir + "img/"
 mask_val_dir = val_dir + "mask/"
 
-callbacks_dir = "../checkpoints/"
-callbacks_dir_name = "model11"
+file_name = sys.argv[0].split(".")[-2]
+callbacks_dir = args.callbacks_dir
+try:
+	os.mkdir(callbacks_dir)
+except OSError:
+	pass
+callbacks_dir_name = file_name
 
-###################################################################################################
+############################################ Size #################################################
 
 train_size = len(os.listdir(path = train_dir + "img/"))
 val_size = len(os.listdir(path = val_dir + "img/"))
 print("Train size: " + str(train_size))
 print("Val size: " + str(val_size))
 
-###################################################################################################
+############################################ Config ###############################################
 
-img_shape = 256
-batch_size = 4
-num_classes = 32
+img_shape = args.img_shape
+batch_size = args.batch_size
+num_classes = args.num_classes
 
-epoch_num = 50
-train_coef = 0.1 # доля объектов тренировочной выборки на каждой эпохе
-learning_rate = 0.0001
+epoch_num = args.epoch_num
+train_coef = args.train_coef
+learning_rate = args.learning_rate
 
-###################################################################################################
+############################################ Metric ##############################################
 
 def dice_coef(y_true, y_pred, smooth=1.):
     y_true_f = K.flatten(y_true)
@@ -89,7 +131,7 @@ def jaccard_coef(y_true, y_pred, smooth=1.):
     return ((intersection + smooth) / 
             (K.sum(y_true_f) + K.sum(y_pred_f) - intersection + smooth))
             
-###################################################################################################
+############################################ Loss #################################################
 
 def dice_loss(y_true, y_pred):
     return 1 - dice_coef(y_true, y_pred)
@@ -97,7 +139,7 @@ def dice_loss(y_true, y_pred):
 def jaccard_loss(y_true, y_pred):
     return 1 - jaccard_coef(y_true, y_pred)
     
-###################################################################################################
+############################################ Generator ############################################
 
 def data_gen(img_dir, mask_dir, num_classes, batch_size):
     img_folder = img_dir
@@ -141,7 +183,7 @@ def data_gen(img_dir, mask_dir, num_classes, batch_size):
 train_gen = data_gen(img_train_dir,mask_train_dir, num_classes=num_classes, batch_size=batch_size)
 val_gen = data_gen(img_val_dir,mask_val_dir, num_classes=num_classes, batch_size=batch_size)
 
-###################################################################################################
+############################################ Model ################################################
 
 def get_model(img_shape, num_classes):
     block0_input = Input(shape=(img_shape, img_shape, 3))
@@ -189,11 +231,15 @@ def get_model(img_shape, num_classes):
 
 model = get_model(None, num_classes)
 
-###################################################################################################
+############################################ Callbacks ############################################
 
 def get_callbacks(dir_name, callbacks_dir="checkpoints/"):
     dir_path = callbacks_dir + dir_name  + "/"
-    os.mkdir(dir_path)
+    
+    try:
+    	os.mkdir(dir_path)
+    except OSError:
+    	pass
     
     #лучшие веса
     best_w = ModelCheckpoint(dir_path + "best_w.h5", 
@@ -217,11 +263,11 @@ def get_callbacks(dir_name, callbacks_dir="checkpoints/"):
     
     #сохраняет историю обучения
     logger = CSVLogger(dir_path + "logger.csv",
-                       append=True)
+                       append=False)
 
     return [best_w, last_w, logger]
     
-###################################################################################################
+############################################ Fit ##################################################
 
 model.compile(optimizer=Adam(learning_rate=learning_rate), 
               loss=jaccard_loss, 
