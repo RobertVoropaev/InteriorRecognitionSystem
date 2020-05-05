@@ -1,0 +1,11 @@
+batch_size=4
+callbacks_dir='../callbacks/'
+epoch_num=8
+img_shape=256
+last_activation='softmax'
+learning_rate=0.001
+loss_function='categorical_crossentropy'
+main_data_dir='../data/ADE20K_encoded/'
+memory_limit=0.8
+num_classes=32
+train_coef=1.0
