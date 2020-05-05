@@ -19,16 +19,23 @@ parser.add_argument('-nc', '--num_classes', 	type=int, 	required=False, default=
 					help="Количество классов = количество каналов выходного слоя")
 
 
-parser.add_argument('-en', '--epoch_num', 		type=int, 	required=True,
+parser.add_argument('-en', '--epoch_num', 		type=int, 	required=False, default=100,
 					help="Количество эпох обучения")
 parser.add_argument('-tc', '--train_coef', 		type=float, required=False, default=1.0,
 					help="Доля объектов обучающей выборки, которые будут использоваться в одной эпохе")
-parser.add_argument('-lr', '--learning_rate', 	type=float, required=False, default=0.0001,
+parser.add_argument('-lr', '--learning_rate', 	type=float, required=False, default=0.001,
 					help="Скорость обучения модели")
 
 					
-parser.add_argument('-ml', '--memory_limit', 	type=float, required=False, default=0.5,
+parser.add_argument('-ml', '--memory_limit', 	type=float, required=False, default=0.8,
 					help="Максимальная доля выделенной GPU памяти")
+
+
+parser.add_argument('-la', '--last_activation', type=str,   required=False, default="softmax",
+                    help="Функция активации выходного слоя")
+
+parser.add_argument('-lf', '--loss_function',   type=str,   required=False, default="categorical_crossentropy",
+                    help="Функция потерь: categorical_crossentropy, dice_loss, jacard_loss")
 
 
 args = parser.parse_args()
@@ -39,6 +46,7 @@ args = parser.parse_args()
 import os
 import sys
 import shutil
+import datetime
 
 #Base
 import numpy as np
@@ -59,9 +67,6 @@ from keras.callbacks import ModelCheckpoint, CSVLogger
 #Preprocessing
 from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import Sequence, to_categorical
-
-#Models
-from keras.applications.vgg16 import VGG16
 
 #GPU
 import tensorflow as tf
@@ -96,7 +101,15 @@ try:
 	os.mkdir(callbacks_dir)
 except OSError:
 	pass
-callbacks_dir_name = file_name
+
+now = datetime.datetime.now()
+callbacks_dir_name = file_name + now.strftime("_%m-%d_%H-%M") 
+
+callbacks_full_dir	 = callbacks_dir + callbacks_dir_name  + "/"
+try:
+	os.mkdir(callbacks_full_dir)
+except OSError:
+	pass
 
 ############################################ Size #################################################
 
@@ -114,6 +127,14 @@ num_classes = args.num_classes
 epoch_num = args.epoch_num
 train_coef = args.train_coef
 learning_rate = args.learning_rate
+
+loss_function = args.loss_function
+last_activation = args.last_activation
+
+with open(callbacks_dir + callbacks_dir_name + "/" + "config.txt", "w") as f:
+    args_str = str(args).lstrip("Namespace(").rstrip(')')
+    args_arr = args_str.split(", ")
+    f.write("\n".join(args_arr))
 
 ############################################ Metric ##############################################
 
@@ -185,7 +206,7 @@ val_gen = data_gen(img_val_dir,mask_val_dir, num_classes=num_classes, batch_size
 
 ############################################ Model ################################################
 
-def get_model(img_shape, num_classes):
+def get_model(img_shape, num_classes, last_activation):
     block0_input = Input(shape=(img_shape, img_shape, 3))
 
     block1_conv1 = Conv2D(64, (3, 3), padding="same", activation="relu")(block0_input)
@@ -225,21 +246,13 @@ def get_model(img_shape, num_classes):
     block7_conv2 = Conv2D(64, (3, 3), padding="same", activation="relu")(block7_conv1)
     block7_conv3 = Conv2D(64, (3, 3), padding="same", activation="relu")(block7_conv2)
     
-    block8_output = Conv2D(num_classes, (1, 1), padding="same", activation="sigmoid")(block7_conv3)
+    block8_output = Conv2D(num_classes, (1, 1), padding="same", activation=last_activation)(block7_conv3)
 
     return Model(inputs=block0_input, outputs=block8_output)
 
-model = get_model(None, num_classes)
-
 ############################################ Callbacks ############################################
 
-def get_callbacks(dir_name, callbacks_dir="checkpoints/"):
-    dir_path = callbacks_dir + dir_name  + "/"
-    
-    try:
-    	os.mkdir(dir_path)
-    except OSError:
-    	pass
+def get_callbacks(dir_path):
     
     #лучшие веса
     best_w = ModelCheckpoint(dir_path + "best_w.h5", 
@@ -267,19 +280,36 @@ def get_callbacks(dir_name, callbacks_dir="checkpoints/"):
 
     return [best_w, last_w, logger]
     
-############################################ Fit ##################################################
+############################################ Compile ##################################################
+
+if last_activation != 'sigmoid' and last_activation != 'softmax':
+	raise ValueError("Incorrect last activation :" + last_activation)
+
+model = get_model(None, num_classes, last_activation)
+
+
+if loss_function == 'categorical_crossentropy':
+	pass
+elif loss_function == 'dice_loss':
+	loss_function = dice_loss
+elif loss_function == 'jaccard_loss':
+	loss_function = jaccard_loss
+else:
+	raise ValueError("Incorrect loss function :" + loss_function)
 
 model.compile(optimizer=Adam(learning_rate=learning_rate), 
-              loss=jaccard_loss, 
+              loss=loss_function, 
               metrics=["accuracy", dice_coef, jaccard_coef])
-    
+
+############################################ Fit ##################################################
+
 model.fit_generator(train_gen, 
                     epochs=epoch_num,
                     steps_per_epoch=int(train_coef*train_size)//batch_size,
                     validation_data=val_gen, 
                     validation_steps=val_size//batch_size,
                     verbose=1,
-                    callbacks=get_callbacks(callbacks_dir_name, callbacks_dir)
+                    callbacks=get_callbacks(callbacks_full_dir)
                     )
                     
 ###################################################################################################          
