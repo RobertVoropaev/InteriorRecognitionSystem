@@ -2,3 +2,4 @@
 data/
 callbacks/
 .idea/
+scripts_/__pycache__/

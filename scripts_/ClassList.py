@@ -1,10 +1,15 @@
 from scripts_.PathFinder import PathFinder
+from scripts_.SegEncoder import SegEncoder
+
 
 class ClassList:
-    def __init__(self, dir_path, min_obj=25, progress_step=0,
-                 objectnames_path="static/objectnames.txt"):
+    def __init__(self,
+                 dir_path: str,
+                 min_obj: int,
+                 progress_step: int = 0,
+                 objectnames_path: str = "static/objectnames.txt"):
         """
-            Констуктор класса
+            Констуктор создания нового списка классов
         ------------------------------------------------------
         Desc:
             Рекурсивно обходит указанную папку и преобразует добавляет файл text в dataframe таблицу
@@ -17,6 +22,11 @@ class ClassList:
                 Done: <num> - обработано <num> фотографий
             * objectnames_path - путь до файла objectnames.txt
         """
+
+        self.se = SegEncoder()
+
+        self.class_encode = []
+        self.class_list = []
 
         df = PathFinder().get_full_df_description(dir_path, only_part_level=0,
                                                   progress_step=progress_step)
@@ -31,6 +41,7 @@ class ClassList:
             for line in f:
                 self.obj_names.append(line.strip())
 
+        self.class_encode_is_load = False
 
     def remove_class(self, class_name):
         """
@@ -115,6 +126,8 @@ class ClassList:
             for line in self.class_list:
                 f.write(str(line) + '\n')
 
+    ##################################################################################################
+
     def save_class_encode(self, filepath):
         """
             Сохраняет правила кодирования классов в файл
@@ -129,3 +142,72 @@ class ClassList:
                     index_arr.append(self.obj_names.index(class_name))
                 index_arr = list(map(str, index_arr))
                 f.write(str(i) + ';' + "|".join(index_arr) + ';' + "|".join(class_arr) + '\n')
+
+    def __init__(self,
+                 class_encode_path: str = "static/class_encode.txt",
+                 objectnames_path: str = "static/objectnames.txt"):
+        """
+            Констуктор загрузки класса из списка
+        ------------------------------------------------------
+        Desc:
+            Загружает данные списка классов из файла
+        Input:
+            * class_encode_path - путь до файла результата ClassList.save_class_encode()
+            * objectnames_path - путь до файла objectnames.txt
+        """
+        self.se = SegEncoder()
+
+        self.class_encode = []
+        self.class_list = []
+
+        self.load_class_encode(class_encode_path, objectnames_path)
+
+    def load_class_encode(self,
+                          class_encode_path: str = "static/class_encode.txt",
+                          objectnames_path: str = "static/objectnames.txt"):
+        """
+            Загружает класс из списка
+        ------------------------------------------------------
+        Desc:
+            Загружает данные списка классов из файла
+        Input:
+            * class_encode_path - путь до файла результата ClassList.save_class_encode()
+            * objectnames_path - путь до файла objectnames.txt
+        """
+
+        with open(class_encode_path) as f:
+            for line in f:
+                line = line.strip()
+                new_index, old_index_arr, class_name_arr = line.split(";")
+
+                new_index = int(new_index)
+                old_index_arr = list(map(int, old_index_arr.split("|")))
+                class_name_arr = class_name_arr.split("|")
+                self.class_encode.append([new_index, old_index_arr, class_name_arr])
+                self.class_list.append(class_name_arr)
+
+        self.class_encode_is_load = True
+
+    def get_old_to_new_dict(self):
+        """
+            Возвращает словарь перевода из старого индекса в новый
+        ------------------------------------------------------
+        Output:
+            Словарь старый индекс -> новый
+        """
+
+        if not self.class_encode_is_load:
+            raise Exception("Class_encode don't load. Use load_class_encode().")
+
+        index_old_to_new_dict = dict()
+
+        for i in range(len(self.se.obj_names)):
+            index_old_to_new_dict[i] = 0
+
+        for line in self.class_encode:
+            new_index = line[0]
+            old_index_arr = line[1]
+            for old_index in old_index_arr:
+                index_old_to_new_dict[old_index] = new_index
+
+        return index_old_to_new_dict
