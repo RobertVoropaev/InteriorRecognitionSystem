@@ -37,6 +37,11 @@ parser.add_argument('-la', '--last_activation', type=str,   required=False, defa
 parser.add_argument('-lf', '--loss_function',   type=str,   required=False, default="categorical_crossentropy",
                     help="Функция потерь: categorical_crossentropy, dice_loss, jacard_loss")
 
+                    
+parser.add_argument('-wp', '--weight_path',   type=str,   required=True,
+                    help="Путь до файла .h5 с весами")
+
+
 
 args = parser.parse_args()
 
@@ -57,12 +62,13 @@ import random
 from skimage.io import imread, imshow, imsave
 
 #Keras
-from keras.models import Sequential, Model
+from keras.models import Sequential, Model, load_model
 from keras.layers import Dense, Flatten, Activation, Input
 from keras.layers import Conv2D, MaxPool2D, UpSampling2D, Conv2DTranspose
 from keras.layers import Dropout,BatchNormalization, Concatenate
 from keras.optimizers import Adam, SGD, RMSprop
 from keras.callbacks import ModelCheckpoint, CSVLogger
+
 
 #Preprocessing
 from keras.preprocessing.image import ImageDataGenerator
@@ -130,6 +136,8 @@ learning_rate = args.learning_rate
 
 loss_function = args.loss_function
 last_activation = args.last_activation
+
+weight_path = args.weight_path
 
 with open(callbacks_dir + callbacks_dir_name + "/" + "config.txt", "w") as f:
     args_str = str(args).lstrip("Namespace(").rstrip(')')
@@ -206,6 +214,8 @@ val_gen = data_gen(img_val_dir,mask_val_dir, num_classes=num_classes, batch_size
 
 ############################################ Model ################################################
 
+######################### Not used ########################
+
 def get_model(img_shape, num_classes, last_activation):
     block0_input = Input(shape=(img_shape, img_shape, 3))
 
@@ -259,7 +269,7 @@ def get_callbacks(dir_path):
                              monitor="val_loss",
                              verbose=0,
                              save_best_only=True,
-                             save_weights_only=True,
+                             save_weights_only=False,
                              mode='auto',
                              period=1
                             )
@@ -269,7 +279,7 @@ def get_callbacks(dir_path):
                              monitor="val_loss",
                              verbose=0,
                              save_best_only=False,
-                             save_weights_only=True,
+                             save_weights_only=False,
                              mode='auto',
                              period=1
                             )
@@ -282,11 +292,14 @@ def get_callbacks(dir_path):
     
 ############################################ Compile ##################################################
 
+
+
 if last_activation != 'sigmoid' and last_activation != 'softmax':
 	raise ValueError("Incorrect last activation :" + last_activation)
 
 model = get_model(None, num_classes, last_activation)
 
+model.load_weights(weight_path)
 
 if loss_function == 'categorical_crossentropy':
 	pass

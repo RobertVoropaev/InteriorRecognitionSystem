@@ -1,0 +1,32 @@
+0;0;-
+1;2977|975|446;wall|floor, flooring|ceiling
+2;470|2678|2271|56|2585|180;chair|swivel chair|seat|armchair|stool|bench
+3;1734|790;painting, picture|drawing
+4;349|2328|238|2984|2035;cabinet|shelf|bookcase|wardrobe, closet, press|rack
+5;3054|211|2421|1746;windowpane, window|blind, screen|skylight, fanlight|pane, pane of glass, window glass
+6;2683|3086|723|570|1373|626|593;table|work surface|desk|coffee table, cocktail table|kitchen island|counter|console table, console
+7;1450|1394|2242|377|2508|375|981|1444|372|479;light, light source|lamp|sconce|candlestick, candle holder|spotlight, spot|candle, taper, wax light|fluorescent, fluorescent fixture|light bulb, lightbulb, bulb, incandescent lamp, electric light, electric-light bulb|candelabrum, candelabra|chandelier, pendant, pendent
+8;773|782|777|2250;door|double door|doorframe, doorcase|screen door, screen
+9;164|688|1868|842|205|641|2472;bed|cushion|pillow|eiderdown, duvet, continental quilt|blanket, cover|cradle|sofa, couch, lounge
+10;1830;person, individual, someone, somebody, mortal, soul
+11;2177|2713;rug, carpet, carpeting|tapestry, tapis
+12;2387|896;sink|faucet, spigot
+13;490|489|788;chest of drawers, chest, bureau, dresser|chest|drawer
+14;529;clock
+15;2597|1138;stove, kitchen stove, range, kitchen range, cooking stove|grill, grille, grillwork
+16;1755|235|1484|1661|761|241|1701;paper|book|magazine|notebook|document, written document, papers|booklet, brochure, folder, leaflet, pamphlet|ottoman, pouf, pouffe, puff, hassock
+17;942;fireplace, hearth, open fireplace
+18;590|1406|1369|2682;computer, computing machine, computing device, data processor, electronic computer, information processing system|laptop, laptop computer|keyboard|system
+19;2729;telephone, phone, telephone set
+20;2792;toilet, can, commode, crapper, pot, potty, stool, throne
+21;154;bathtub, bathing tub, bath, tub
+22;2095;refrigerator, icebox
+23;1582|2732|3108|2253;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen|screen, silver screen, projection screen
+24;1707|1550;oven|microwave, microwave oven
+25;568|2722;coffee maker|teapot
+26;37|2338|1345|2660|2876|1196;apparel, wearing apparel, dress, clothes|shirt|jacket|sweater, jumper|trouser, pant|hat, chapeau, lid
+27;2355|2361;shower|shower stall, shower bath
+28;122|307|246;bar|buffet, counter, sideboard|booth, cubicle, stall, kiosk
+29;9|2045|893;air conditioner, air conditioning|radiator|fan
+30;2529|2530|2568;stairs, steps|stairway, staircase|step, stair
+31;201|317|219;blackboard, chalkboard|bulletin board, notice board|board, plank
