@@ -1,6 +1,8 @@
 import numpy as np
 import os
 import shutil
+import random
+
 from skimage.io import imread, imsave
 
 from scripts_.PathFinder import PathFinder
@@ -109,7 +111,7 @@ class SegEncoder:
                 val/img/
                 val/mask/
         Input:
-            * dir_src - папка с файлами img и seg
+            * dir_src - папка исходного датасета, в подпапках которого лежат файлы img и seg
             * dir_dst - папка, в которой будет создан новый датасет
             * update_current_dir - флаг: переписывать ли папку назначения, если она уже существует
             * progress_step <int> - шаг, с которым будет выводиться сообщения о прогрессе
@@ -126,7 +128,7 @@ class SegEncoder:
         mask_dst_val = dir_dst + 'val/mask/'
 
         if (os.path.isdir(img_dst_train) and os.path.isdir(mask_dst_train) and
-            os.path.isdir(img_dst_val) and os.path.isdir(mask_dst_val) and not update_current_dir):
+                os.path.isdir(img_dst_val) and os.path.isdir(mask_dst_val) and not update_current_dir):
             raise Exception("Dst dir don't empty. Use update_current_dir=True.")
 
         if os.path.isdir(dir_dst):
@@ -164,3 +166,145 @@ class SegEncoder:
                     progress_counter += 1
                     if progress_counter % progress_step == 0:
                         print("Done: " + str(progress_counter))
+
+    def get_bounding_box(self, seg, class_arr: list):
+        """
+            Возвращает словарь из границ квадрата для каждого элемента из class_arr на маске
+        ------------------------------------------------------
+        Desc:
+            Проходит по маске и собирает все bounding box'ы для классов из class_arr
+        Input:
+            * seg - np.array() маска
+            * class_arr - список имён классов
+        Output:
+            Словарь: class_name => (min_h, max_h, min_w, max_w), где индекс в массиве соответсвует индексу в class_arr
+        """
+
+        MAX, MIN = 10000, -1
+
+        hw_dict = dict()
+        for class_name in class_arr:
+            hw_dict[class_name] = [MAX, MIN, MAX, MIN]
+
+        for i in range(seg.shape[0]):
+            for j in range(seg.shape[1]):
+                pixel = seg[i, j]
+                current_class = self.get_class(pixel)
+
+                if current_class not in hw_dict:
+                    continue
+
+                if hw_dict[current_class][0] == MAX:
+                    hw_dict[current_class][0] = i
+                hw_dict[current_class][1] = i
+
+                if j < hw_dict[current_class][2]:
+                    hw_dict[current_class][2] = j
+                if j > hw_dict[current_class][3]:
+                    hw_dict[current_class][3] = j
+        return hw_dict
+
+    def get_hw_dict(self,
+                    dir_path: str = 'data/ADE20K_filtred/images/train/',
+                    class_list: list = list(),
+                    max_num: int = 5,
+                    skip_probably: int = 0.5,
+                    progress_bar: bool = False):
+        """
+            Возвращает словарь из указанного числа разных bounding_box'ов объектов списка классов
+        ------------------------------------------------------
+        Desc:
+            Рекурсивно обходит папку и сохраняет bounding_box и путь до файла, если встречает объект в маске
+        Input:
+            * dir_path - папка для обхода
+            * class_list - список названий (оригинальных) объектов классов
+                    Если передаётся пустой, то функция будет собирать все объекты
+            * max_num - максимальное число уже найденных объектов класса, при котором новая маска будет рассматриваться
+                        (если данного объекта уже слишком много, то маска рассматриваться не будет,
+                        если там нет другого объекта из списка, которого не хватает
+            * skip_probably - вероятность того, что данный файл датасета будет пропущен
+                        (нужно, так как иногда встречаются подряд много фотографий в высоком качестве,
+                        которые очень долго обрабатываются)
+            * progress_bar - вывод количества уже рассмотренных файлов и статистики по найденным предметам
+        Output:
+            Словарь: class_name => dict(path, min_h, max_h, min_w, max_w),
+                где class_name в массиве соответсвует элементу в class_list
+        """
+
+
+
+        hw_all = dict()
+        progress_counter = 0
+        for file, path in self.pf.data_gen(dir_path, return_path=True):
+            if random.random() > skip_probably:
+                continue
+
+            path += '/'
+            name, description, train_or_val, parts_num = self.pf.get_format(file)
+
+            if description == "img":
+                progress_counter += 1
+
+                img = imread(path + self.pf.get_img(file))
+                seg = imread(path + self.pf.get_seg(file))
+                list_obj = self.pf.get_class_list_from_desc(path + self.pf.get_text(file))
+
+                if class_list:
+                    is_contain = False
+                    for class_name in class_list:
+                        if class_name in list_obj:
+                            if class_name not in hw_all or len(hw_all[class_name]) < max_num:
+                                is_contain = True
+                                break
+                    if not is_contain:
+                        continue
+
+                hw_d = self.get_bounding_box(seg, list_obj)
+
+                if class_list:
+                    class_arr = class_list
+                else:
+                    class_arr = list_obj
+
+                for class_name in class_arr:
+                    if class_name not in list_obj:
+                        continue
+
+                    box = (min_h, max_h, min_w, max_w) = hw_d[class_name]
+                    d = {"path": path + self.pf.get_img(file),
+                         "min_h": box[0], "max_h": box[1],
+                         "min_w": box[2], "max_w": box[3]}
+
+                    if class_name in hw_all:
+                        hw_all[class_name].append(d)
+                    else:
+                        hw_all[class_name] = [d]
+
+                if progress_bar:
+                    print("Done: " + str(progress_counter))
+
+                if class_list:
+                    class_arr = class_list
+                else:
+                    class_arr = hw_all.keys()
+
+                is_all_more_max = True
+                for class_name in class_arr:
+                    if class_name in hw_all:
+                        num = len(hw_all[class_name])
+                    else:
+                        num = 0
+
+                    if num < max_num:
+                        is_all_more_max = False
+
+                    if progress_bar:
+                        print(class_name + ": " + str(num), end="; ")
+
+                if progress_bar:
+                    print()
+
+                if is_all_more_max:
+                    break
+
+        return hw_all

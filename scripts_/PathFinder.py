@@ -89,6 +89,9 @@ class PathFinder:
         return pd.DataFrame(description).rename(columns={0: "instance_n", 1: "part_level", 2: "occluded",
                                                          3: "class_name", 4: "original_name", 5: "attributes"})
 
+    def get_class_list_from_desc(self, desc_path):
+        return self.get_df_description(desc_path, only_part_level=0).class_name.unique()
+
     def get_dataset_size(self, dir_path):
         """
             Количество уникальных объектов датасета в папке
