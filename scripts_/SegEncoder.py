@@ -2,8 +2,9 @@ import numpy as np
 import os
 import shutil
 import random
+from matplotlib import pyplot as plt
 
-from skimage.io import imread, imsave
+from skimage.io import imread, imsave, imshow
 
 from scripts_.PathFinder import PathFinder
 
@@ -218,10 +219,11 @@ class SegEncoder:
         Input:
             * dir_path - папка для обхода
             * class_list - список названий (оригинальных) объектов классов
-                    Если передаётся пустой, то функция будет собирать все объекты
+                        Если передаётся пустой, то функция будет собирать все объекты
             * max_num - максимальное число уже найденных объектов класса, при котором новая маска будет рассматриваться
                         (если данного объекта уже слишком много, то маска рассматриваться не будет,
                         если там нет другого объекта из списка, которого не хватает
+                Прим. При загрузки не хватающего объекта в словарь могут загрузиться и переполненные объекты
             * skip_probably - вероятность того, что данный файл датасета будет пропущен
                         (нужно, так как иногда встречаются подряд много фотографий в высоком качестве,
                         которые очень долго обрабатываются)
@@ -231,10 +233,9 @@ class SegEncoder:
                 где class_name в массиве соответсвует элементу в class_list
         """
 
-
-
         hw_all = dict()
         progress_counter = 0
+
         for file, path in self.pf.data_gen(dir_path, return_path=True):
             if random.random() > skip_probably:
                 continue
@@ -249,6 +250,7 @@ class SegEncoder:
                 seg = imread(path + self.pf.get_seg(file))
                 list_obj = self.pf.get_class_list_from_desc(path + self.pf.get_text(file))
 
+                # есть ли в описании хотя бы один нужный нам класс
                 if class_list:
                     is_contain = False
                     for class_name in class_list:
@@ -261,12 +263,14 @@ class SegEncoder:
 
                 hw_d = self.get_bounding_box(seg, list_obj)
 
+                # если пустой класс лист, то сохранять полный список из описания
                 if class_list:
                     class_arr = class_list
                 else:
                     class_arr = list_obj
 
                 for class_name in class_arr:
+                    # данного класса нет в описании
                     if class_name not in list_obj:
                         continue
 
@@ -283,6 +287,7 @@ class SegEncoder:
                 if progress_bar:
                     print("Done: " + str(progress_counter))
 
+                # если список классов пустой, то выводить найденные все найденные
                 if class_list:
                     class_arr = class_list
                 else:
@@ -295,16 +300,65 @@ class SegEncoder:
                     else:
                         num = 0
 
+                    # какой-то из классов ещё не заполнен
                     if num < max_num:
                         is_all_more_max = False
 
                     if progress_bar:
-                        print(class_name + ": " + str(num), end="; ")
+                        print(str(num), end="; ")
 
                 if progress_bar:
                     print()
 
+                # все классы заполнились
                 if is_all_more_max:
                     break
 
         return hw_all
+
+    def show(self, hw_all, class_list,
+             subplot=True, subplot_horizontal=False, subplot_num=5, figsize_shape=10):
+
+        for class_name in class_list:
+            print(class_name)
+
+            if figsize_shape != 0:
+                plt.figure(figsize=(figsize_shape, figsize_shape))
+
+            for obj, i in zip(hw_all[class_name], range(subplot_num)):
+
+                img = imread(obj["path"])
+
+                if subplot:
+                    if subplot_horizontal:
+                        plt.subplot(100 * subplot_num + 10 + i + 1)
+                    else:
+                        plt.subplot(100 + 10 * subplot_num + i + 1)
+                imshow(img[obj['min_h']:obj['max_h'], obj['min_w']:obj['max_w']])
+
+            plt.show()
+
+    def show_one(self, hw_all, name,
+                 img_num=5, figsize_shape=0):
+
+        print(name)
+        for obj, i in zip(hw_all[name], range(img_num)):
+            if figsize_shape != 0:
+                plt.figure(figsize=(figsize_shape, figsize_shape))
+
+            img = imread(obj["path"])
+
+            imshow(img[obj['min_h']:obj['max_h'], obj['min_w']:obj['max_w']])
+        plt.show()
+
+    def get_flatten_class_list(self):
+        """
+            [['-'], ['chair', 'armchair'], ['bed']] => ['-', 'chair', 'armchair', 'bed']
+        """
+
+        flat = []
+        for megaclass in self.class_list:
+            for class_name in megaclass:
+                flat.append(class_name)
+
+        return flat

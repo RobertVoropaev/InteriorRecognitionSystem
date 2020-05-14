@@ -4,10 +4,13 @@ from scripts_.SegEncoder import SegEncoder
 
 class ClassList:
     def __init__(self,
-                 dir_path: str,
-                 min_obj: int,
+                 dir_path: str = "dir_path",
+                 min_obj: int = 50,
                  progress_step: int = 0,
-                 objectnames_path: str = "static/objectnames.txt"):
+                 objectnames_path: str = "static/objectnames.txt",
+                 load_class_encode: bool = False,
+                 class_encode_path: str = "static/class_encode.txt"
+                 ):
         """
             Констуктор создания нового списка классов
         ------------------------------------------------------
@@ -21,6 +24,8 @@ class ClassList:
             * progress_step <int> - шаг, с которым будет выводиться сообщения о прогрессе
                 Done: <num> - обработано <num> фотографий
             * objectnames_path - путь до файла objectnames.txt
+            * load_class_encode - флаг загрузки готового списка (если True, то параметры выше не учитываются)
+            * class_encode_path - путь до файла результата ClassList.save_class_encode()
         """
 
         self.se = SegEncoder()
@@ -28,20 +33,23 @@ class ClassList:
         self.class_encode = []
         self.class_list = []
 
-        df = PathFinder().get_full_df_description(dir_path, only_part_level=0,
-                                                  progress_step=progress_step)
+        if load_class_encode:
+            self.load_class_encode(class_encode_path, objectnames_path)
+        else:
+            df = PathFinder().get_full_df_description(dir_path, only_part_level=0,
+                                                      progress_step=progress_step)
 
-        indexes = list(df.class_name.value_counts() > min_obj)
+            indexes = list(df.class_name.value_counts() > min_obj)
 
-        self.class_list = ['-'] + list(df.class_name.value_counts()[indexes].index)
-        self.class_list = list(map(lambda x: [x], self.class_list))
+            self.class_list = ['-'] + list(df.class_name.value_counts()[indexes].index)
+            self.class_list = list(map(lambda x: [x], self.class_list))
 
-        self.obj_names = []
-        with open(objectnames_path, 'r') as f:
-            for line in f:
-                self.obj_names.append(line.strip())
+            self.obj_names = []
+            with open(objectnames_path, 'r') as f:
+                for line in f:
+                    self.obj_names.append(line.strip())
 
-        self.class_encode_is_load = False
+            self.class_encode_is_load = False
 
     def remove_class(self, class_name):
         """
@@ -67,6 +75,24 @@ class ClassList:
                 return True
 
         return False
+
+    def remove_classes(self, class_list: list):
+        """
+            Удаляет массив классов
+        ------------------------------------------------------
+        Desc:
+            В цикле вызывает remove_class
+        Input:
+            * class_list - список удаляемых классов
+        Output:
+            Массив классов, которые не были удалены из-за ошибки
+        """
+
+        exc_list = []  # классы, которые не были удалены
+        for class_name in class_list:
+            if not self.remove_class(class_name):
+                exc_list.append(class_name)
+        return exc_list
 
     def find_i(self, class_name):
         """
@@ -109,6 +135,22 @@ class ClassList:
         self.class_list.remove(self.class_list[i_from])
         return True
 
+    def join_list(self, join_list):
+        """
+            Объединяет мегаклассы по списку
+        ------------------------------------------------------
+        Input:
+            * join_list - список элеметов (class_name_from, class_name_to)
+        Output:
+            Массив элементов, которые не были объеденены из-за ошибки
+        """
+        exc_list = []
+        for class_from, class_to in join_list:
+            if not self.join(class_from, class_to):
+                exc_list.append([class_from, class_to])
+        return exc_list
+
+
     def size(self):
         """
             Количество мегаклассов
@@ -142,25 +184,6 @@ class ClassList:
                     index_arr.append(self.obj_names.index(class_name))
                 index_arr = list(map(str, index_arr))
                 f.write(str(i) + ';' + "|".join(index_arr) + ';' + "|".join(class_arr) + '\n')
-
-    def __init__(self,
-                 class_encode_path: str = "static/class_encode.txt",
-                 objectnames_path: str = "static/objectnames.txt"):
-        """
-            Констуктор загрузки класса из списка
-        ------------------------------------------------------
-        Desc:
-            Загружает данные списка классов из файла
-        Input:
-            * class_encode_path - путь до файла результата ClassList.save_class_encode()
-            * objectnames_path - путь до файла objectnames.txt
-        """
-        self.se = SegEncoder()
-
-        self.class_encode = []
-        self.class_list = []
-
-        self.load_class_encode(class_encode_path, objectnames_path)
 
     def load_class_encode(self,
                           class_encode_path: str = "static/class_encode.txt",
