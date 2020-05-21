@@ -3,51 +3,38 @@
 2;1734|790|2713;painting, picture|drawing|tapestry, tapis
 3;349;cabinet
 4;2683|723;table|desk
-5;1394;lamp
-6;235|1484;book|magazine
-7;773;door
-8;164;bed
-9;1868|688;pillow|cushion
-10;56;armchair
-11;1830;person, individual, someone, somebody, mortal, soul
-12;2472;sofa, couch, lounge
-13;2328|238;shelf|bookcase
-14;977|1909;flower|plant, flora, plant life
-15;2177;rug, carpet, carpeting
-16;2387;sink
-17;2678;swivel chair
-18;570;coffee table, cocktail table
-19;2585;stool
-20;490;chest of drawers, chest, bureau, dresser
-21;529;clock
-22;2597;stove, kitchen stove, range, kitchen range, cooking stove
-23;590;computer, computing machine, computing device, data processor, electronic computer, information processing system
-24;2792;toilet, can, commode, crapper, pot, potty, stool, throne
-25;154;bathtub, bathing tub, bath, tub
-26;893;fan
-27;2095;refrigerator, icebox
-28;2984;wardrobe, closet, press
-29;1550;microwave, microwave oven
-30;1582|2732|3108;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen
-31;1259;hood, exhaust hood
-32;746;dishwasher, dish washer, dishwashing machine
-33;1707;oven
-34;1473;loudspeaker, speaker, speaker unit, loudspeaker system, speaker system
-35;2045;radiator
-36;568;coffee maker
-37;37|2338|2876|1345|2660;apparel, wearing apparel, dress, clothes|shirt|trouser, pant|jacket|sweater, jumper
-38;2530;stairway, staircase
-39;180;bench
-40;1406;laptop, laptop computer
-41;626|3086|1373|628;counter|work surface|kitchen island|countertop
-42;1366;kettle, boiler
-43;9;air conditioner, air conditioning
-44;593;console table, console
-45;2006;printer
-46;2682;system
-47;2529;stairs, steps
-48;641;cradle
-49;2988;washer, automatic washer, washing machine
-50;1369;keyboard
-51;1613;mousepad, mouse mat
-52;201;blackboard, chalkboard
+5;773;door
+6;1909;plant, flora, plant life
+7;164;bed
+8;1868|688;pillow|cushion
+9;56;armchair
+10;1830;person, individual, someone, somebody, mortal, soul
+11;2472;sofa, couch, lounge
+12;2177;rug, carpet, carpeting
+13;2387;sink
+14;2678;swivel chair
+15;570;coffee table, cocktail table
+16;2585;stool
+17;490;chest of drawers, chest, bureau, dresser
+18;2597;stove, kitchen stove, range, kitchen range, cooking stove
+19;590;computer, computing machine, computing device, data processor, electronic computer, information processing system
+20;2792;toilet, can, commode, crapper, pot, potty, stool, throne
+21;154;bathtub, bathing tub, bath, tub
+22;2095;refrigerator, icebox
+23;2984;wardrobe, closet, press
+24;1550;microwave, microwave oven
+25;1582|2732|3108;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen
+26;1259;hood, exhaust hood
+27;746;dishwasher, dish washer, dishwashing machine
+28;1707;oven
+29;1473;loudspeaker, speaker, speaker unit, loudspeaker system, speaker system
+30;37|2338|2876|1345|2660;apparel, wearing apparel, dress, clothes|shirt|trouser, pant|jacket|sweater, jumper
+31;2530;stairway, staircase
+32;180;bench
+33;1406;laptop, laptop computer
+34;626|3086|1373|628;counter|work surface|kitchen island|countertop
+35;593;console table, console
+36;2006;printer
+37;641;cradle
+38;2988;washer, automatic washer, washing machine
+39;201;blackboard, chalkboard

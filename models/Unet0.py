@@ -15,7 +15,7 @@ parser.add_argument('-is', '--img_shape', 		type=int, 	required=False, default=2
 					help="Размер входного слоя сети")
 parser.add_argument('-bs', '--batch_size', 		type=int, 	required=False, default=4,
 					help="Количество объектов в каждом batch на обучении и валидации")
-parser.add_argument('-nc', '--num_classes', 	type=int, 	required=False, default=32,
+parser.add_argument('-nc', '--num_classes', 	type=int, 	required=False, default=53,
 					help="Количество классов = количество каналов выходного слоя")
 
 
