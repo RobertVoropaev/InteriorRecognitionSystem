@@ -13,28 +13,19 @@
 12;2177;rug, carpet, carpeting
 13;2387;sink
 14;2678;swivel chair
-15;570;coffee table, cocktail table
-16;2585;stool
-17;490;chest of drawers, chest, bureau, dresser
-18;2597;stove, kitchen stove, range, kitchen range, cooking stove
-19;590;computer, computing machine, computing device, data processor, electronic computer, information processing system
-20;2792;toilet, can, commode, crapper, pot, potty, stool, throne
-21;154;bathtub, bathing tub, bath, tub
-22;2095;refrigerator, icebox
-23;2984;wardrobe, closet, press
-24;1550;microwave, microwave oven
-25;1582|2732|3108;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen
-26;1259;hood, exhaust hood
-27;746;dishwasher, dish washer, dishwashing machine
-28;1707;oven
-29;1473;loudspeaker, speaker, speaker unit, loudspeaker system, speaker system
-30;37|2338|2876|1345|2660;apparel, wearing apparel, dress, clothes|shirt|trouser, pant|jacket|sweater, jumper
-31;2530;stairway, staircase
-32;180;bench
-33;1406;laptop, laptop computer
-34;626|3086|1373|628;counter|work surface|kitchen island|countertop
-35;593;console table, console
-36;2006;printer
-37;641;cradle
-38;2988;washer, automatic washer, washing machine
-39;201;blackboard, chalkboard
+15;2585;stool
+16;490;chest of drawers, chest, bureau, dresser
+17;2597;stove, kitchen stove, range, kitchen range, cooking stove
+18;590;computer, computing machine, computing device, data processor, electronic computer, information processing system
+19;154;bathtub, bathing tub, bath, tub
+20;2095;refrigerator, icebox
+21;2984;wardrobe, closet, press
+22;1550;microwave, microwave oven
+23;1582|2732|3108;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen
+24;1259;hood, exhaust hood
+25;1707;oven
+26;1406;laptop, laptop computer
+27;626|3086|1373|628;counter|work surface|kitchen island|countertop
+28;593;console table, console
+29;2006;printer
+30;2988;washer, automatic washer, washing machine
