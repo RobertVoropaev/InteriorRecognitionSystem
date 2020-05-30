@@ -5,24 +5,24 @@
 
 class def_config:
 
-    main_data_dir_def = "../data/ADE20K_encoded/"
-    callbacks_dir_def = "../callbacks/"
+    main_data_dir = "../data/ADE20K_encoded/"
+    callbacks_dir = "../callbacks/"
 
-    img_shape_def = 256
-    classes_num_def = 31
+    img_shape = 256
+    classes_num = 31
 
-    batch_size_def = 4
-    epoch_num_def = 10
-    train_coef_def = 1.0
-    learning_rate_def = 0.0001
+    batch_size = 4
+    epoch_num = 10
+    train_coef = 1.0
+    learning_rate = 0.0001
 
-    last_activation_def = "sigmoid"
-    loss_function_def = "categorical_crossentropy"
+    last_activation = "sigmoid"
+    loss_function = "categorical_crossentropy"
 
-    gpu_memory_limit_def = 0.8
-    cpu_threads_num_def = 4
+    gpu_memory_limit = 0.8
+    cpu_threads_num = 4
 
-    callbacks_monitor_def = "val_jaccard_coef"
+    callbacks_monitor = "val_jaccard_coef"
     callbacks_data_format = "%m.%d_%H:%M"
 
     is_load = False
@@ -40,65 +40,65 @@ if def_config.argparse_is_on:
     ### Dirs
 
     parser.add_argument('-md', '--main_data_dir', type=str, required=False,
-                        default=def_config.main_data_dir_def,
+                        default=def_config.main_data_dir,
                         help="Главная папка с папками train и val")
 
     parser.add_argument('-cd', '--callbacks_dir', type=str, required=False,
-                        default=def_config.callbacks_dir_def,
+                        default=def_config.callbacks_dir,
                         help="Папка, в которую будут записываться данные каждой модели")
 
     ### Input
 
     parser.add_argument('-is', '--img_shape', type=int, required=False,
-                        default=def_config.img_shape_def,
+                        default=def_config.img_shape,
                         help="Размер входного слоя сети")
 
     parser.add_argument('-cn', '--classes_num', type=int, required=False,
-                        default=def_config.classes_num_def,
+                        default=def_config.classes_num,
                         help="Количество классов = количество каналов выходного слоя")
 
     ### Train
 
     parser.add_argument('-bs', '--batch_size', type=int, required=False,
-                        default=def_config.batch_size_def,
+                        default=def_config.batch_size,
                         help="Количество объектов в каждом batch на обучении и валидации")
 
     parser.add_argument('-en', '--epoch_num', type=int, required=False,
-                        default=def_config.epoch_num_def,
+                        default=def_config.epoch_num,
                         help="Количество эпох обучения")
 
     parser.add_argument('-tc', '--train_coef', type=float, required=False,
-                        default=def_config.train_coef_def,
+                        default=def_config.train_coef,
                         help="Доля объектов обучающей выборки, которые будут использоваться в одной эпохе")
 
     parser.add_argument('-lr', '--learning_rate', type=float, required=False,
-                        default=def_config.learning_rate_def,
+                        default=def_config.learning_rate,
                         help="Скорость обучения модели")
 
     ### Output
 
     parser.add_argument('-la', '--last_activation', type=str, required=False,
-                        default=def_config.last_activation_def,
+                        default=def_config.last_activation,
                         help="Функция активации выходного слоя")
 
     parser.add_argument('-lf', '--loss_function', type=str, required=False,
-                        default=def_config.loss_function_def,
+                        default=def_config.loss_function,
                         help="Функция потерь")
 
     ### Memory limit
 
     parser.add_argument('-gl', '--gpu_memory_limit', type=float, required=False,
-                        default=def_config.gpu_memory_limit_def,
+                        default=def_config.gpu_memory_limit,
                         help="Максимальная доля выделенной GPU памяти")
 
     parser.add_argument('-ct', '--cpu_threads_num', type=int, required=False,
-                        default=def_config.cpu_threads_num_def,
+                        default=def_config.cpu_threads_num,
                         help="Максимальное количество потоков CPU")
 
     ### Callbacks settings
 
     parser.add_argument('-cm', '--callbacks_monitor', type=str, required=False,
-                        default=def_config.callbacks_monitor_def,
+                        default=def_config.callbacks_monitor,
                         help="Метрика сохранения лучшего callback'а")
 
     ### Load
@@ -224,7 +224,10 @@ loss_function = args.loss_function
 last_activation = args.last_activation
 
 is_load = args.is_load
-weight_path = args.weight_path
+if is_load:
+	weight_path = args.weight_path
+else:
+	weight_path = None
 
 
 with open(callbacks_dir + callbacks_dir_name + "/" + "config.txt", "w") as f:
