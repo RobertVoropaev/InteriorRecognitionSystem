@@ -12,8 +12,8 @@ class def_config:
     classes_num = 31
 
     batch_size = 4
-    epoch_num = 10
-    train_coef = 1.0
+    epoch_num = 2
+    train_coef = 1
     learning_rate = 0.0001
 
     last_activation = "sigmoid"
@@ -24,11 +24,12 @@ class def_config:
 
     callbacks_monitor = "val_jaccard_coef"
     callbacks_data_format = "%m.%d_%H:%M"
-
+    file_name = "DefName"
+    
     is_load = False
-    argparse_is_on = True
-
-
+    argparse_is_on = False
+    
+    
 ############################################ Argparse #############################################
 
 
@@ -150,19 +151,21 @@ np.random.seed(seed)
 random.seed(seed)
 
 
-############################################ Session limit ##############################################
+############################################ Session limit ###########################################
 
 
-config = tf.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
+config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
                         inter_op_parallelism_threads=args.cpu_threads_num)
 config.gpu_options.per_process_gpu_memory_fraction = args.gpu_memory_limit
-sess = tf.Session(config=config)
-K.set_session(sess)
+sess = tf.compat.v1.Session(config=config)
+tf.compat.v1.keras.backend.set_session(sess)
 
 # GPU check list
-GPU_list = [x for x in device_lib.list_local_devices() if x.device_type == 'GPU']
+GPU_list = [x for x in device_lib.list_local_devices() 
+            if x.device_type == 'GPU' or x.device_type == "GPU"]
 print(GPU_list)
-if len(GPU_list) == 0:
+
+if not tf.test.is_gpu_available():
     raise OSError("GPU not found")
 
 
