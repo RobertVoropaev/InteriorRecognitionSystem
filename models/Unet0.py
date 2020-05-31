@@ -12,7 +12,7 @@ class def_config:
     classes_num = 31
 
     batch_size = 4
-    epoch_num = 2
+    epoch_num = 10
     train_coef = 1
     learning_rate = 0.0001
 
@@ -23,11 +23,11 @@ class def_config:
     cpu_threads_num = 4
 
     callbacks_monitor = "val_jaccard_coef"
-    callbacks_data_format = "%m.%d_%H:%M"
+    callbacks_data_format = "%m.%d_%H-%M"
     file_name = "DefName"
     
     is_load = False
-    argparse_is_on = False
+    argparse_is_on = True
     
     
 ############################################ Argparse #############################################
@@ -139,6 +139,7 @@ from keras.callbacks import ModelCheckpoint, CSVLogger
 
 # Preprocessing
 from keras.utils import Sequence, to_categorical
+from keras.utils.vis_utils import plot_model
 
 # Backend
 import tensorflow as tf
@@ -319,6 +320,8 @@ val_gen = data_gen(img_val_dir, mask_val_dir, classes_num=classes_num, batch_siz
 ############################################ Model ################################################
 
 def get_model(img_shape, classes_num, last_activation):
+    model_name = "Unet0_model"
+    
     block0_input = Input(shape=(img_shape, img_shape, 3))
 
     block1_conv1 = Conv2D(64, (3, 3), padding="same", activation="relu")(block0_input)
@@ -360,7 +363,7 @@ def get_model(img_shape, classes_num, last_activation):
 
     block8_output = Conv2D(classes_num, (1, 1), padding="same", activation=last_activation)(block7_conv3)
 
-    return Model(inputs=block0_input, outputs=block8_output)
+    return Model(inputs=block0_input, outputs=block8_output), model_name
 
 
 ############################################ Callbacks ############################################
@@ -398,7 +401,10 @@ def get_callbacks(dir_path, callbacks_monitor):
 if last_activation != 'sigmoid' and last_activation != 'softmax':
     raise ValueError("Incorrect last activation :" + last_activation)
 
-model = get_model(None, classes_num, last_activation)
+model, model_name = get_model(None, classes_num, last_activation)
+
+plot_model(model=model, to_file=callbacks_full_dir + model_name + ".png", show_shapes=True, dpi=200)
+
 
 if is_load:
     if not weight_path:
