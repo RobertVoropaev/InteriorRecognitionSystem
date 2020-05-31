@@ -2,8 +2,11 @@
 
 ############################################ Arg default #############################################
 
+import sys
 
 class def_config:
+    model_class = sys.argv[0].split(".")[-2]
+    model_type = ""
 
     main_data_dir = "../data/ADE20K_encoded/"
     callbacks_dir = "../callbacks/"
@@ -24,7 +27,6 @@ class def_config:
 
     callbacks_monitor = "val_jaccard_coef"
     callbacks_data_format = "%m.%d_%H-%M"
-    file_name = "DefName"
     
     is_load = False
     argparse_is_on = True
@@ -38,6 +40,15 @@ if def_config.argparse_is_on:
 
     parser = argparse.ArgumentParser('UNet model')
 
+    ### Names
+    parser.add_argument('-mc', '--model_class', type=str, required=False,
+                        default=def_config.model_class,
+                        help="Класс модели")
+                        
+    parser.add_argument('-mt', '--model_type', type=str, required=False,
+                        default=def_config.model_type,
+                        help="Тип модели")
+                        
     ### Dirs
 
     parser.add_argument('-md', '--main_data_dir', type=str, required=False,
@@ -121,8 +132,8 @@ else:
 
 # System
 import os
-import sys
 import datetime
+import time
 
 # Base
 import numpy as np
@@ -172,6 +183,9 @@ if not tf.test.is_gpu_available():
 
 ############################################ Path #################################################
 
+model_class = args.model_class
+model_type = args.model_type
+model_name = model_class + "_" + model_type
 
 main_data_dir = args.main_data_dir
 
@@ -186,7 +200,6 @@ mask_val_dir = val_dir + "mask/"
 
 # Callbacks
 
-file_name = sys.argv[0].split(".")[-2]
 callbacks_dir = args.callbacks_dir
 
 try:
@@ -195,7 +208,7 @@ except OSError:
     pass
 
 now = datetime.datetime.now()
-callbacks_dir_name = file_name + now.strftime("_" + def_config.callbacks_data_format) + "/"
+callbacks_dir_name = model_name + now.strftime("_" + def_config.callbacks_data_format) + "/"
 
 callbacks_full_dir = callbacks_dir + callbacks_dir_name
 try:
@@ -320,8 +333,6 @@ val_gen = data_gen(img_val_dir, mask_val_dir, classes_num=classes_num, batch_siz
 ############################################ Model ################################################
 
 def get_model(img_shape, classes_num, last_activation):
-    model_name = "Unet0_model"
-    
     block0_input = Input(shape=(img_shape, img_shape, 3))
 
     block1_conv1 = Conv2D(64, (3, 3), padding="same", activation="relu")(block0_input)
@@ -363,15 +374,23 @@ def get_model(img_shape, classes_num, last_activation):
 
     block8_output = Conv2D(classes_num, (1, 1), padding="same", activation=last_activation)(block7_conv3)
 
-    return Model(inputs=block0_input, outputs=block8_output), model_name
-
+    return Model(inputs=block0_input, outputs=block8_output)
 
 ############################################ Callbacks ############################################
 
 def get_callbacks(dir_path, callbacks_monitor):
     # лучшие веса
-    best_w = ModelCheckpoint(dir_path + "best_w.h5",
-                             monitor=callbacks_monitor,
+    best_w_loss = ModelCheckpoint(dir_path + "best_w_loss.h5",
+                             monitor="val_loss",
+                             verbose=0,
+                             save_best_only=True,
+                             save_weights_only=True,
+                             mode='auto',
+                             period=1
+                             )
+    
+    best_w_jaccard = ModelCheckpoint(dir_path + "best_w_jaccard.h5",
+                             monitor="val_jaccard_coef",
                              verbose=0,
                              save_best_only=True,
                              save_weights_only=True,
@@ -381,7 +400,6 @@ def get_callbacks(dir_path, callbacks_monitor):
 
     # последние веса
     last_w = ModelCheckpoint(dir_path + "last_w.h5",
-                             monitor=callbacks_monitor,
                              verbose=0,
                              save_best_only=False,
                              save_weights_only=True,
@@ -393,7 +411,7 @@ def get_callbacks(dir_path, callbacks_monitor):
     logger = CSVLogger(dir_path + "logger.csv",
                        append=False)
 
-    return [best_w, last_w, logger]
+    return [best_w_loss, best_w_jaccard, last_w, logger]
 
 
 ############################################ Compile #################################################
@@ -401,10 +419,13 @@ def get_callbacks(dir_path, callbacks_monitor):
 if last_activation != 'sigmoid' and last_activation != 'softmax':
     raise ValueError("Incorrect last activation :" + last_activation)
 
-model, model_name = get_model(None, classes_num, last_activation)
+model = get_model(None, classes_num, last_activation)
 
 plot_model(model=model, to_file=callbacks_full_dir + model_name + ".png", show_shapes=True, dpi=200)
+model.summary()
 
+with open(callbacks_full_dir + "param_count.txt", "w") as f:
+    f.write(str(model.count_params()))
 
 if is_load:
     if not weight_path:
@@ -435,4 +456,24 @@ model.fit_generator(train_gen,
                     callbacks=get_callbacks(callbacks_full_dir, callbacks_monitor)
                     )
 
-###################################################################################################
+############################################ Timing ###############################################
+
+val_gen_test = data_gen(img_val_dir, mask_val_dir, classes_num=classes_num, batch_size=batch_size)
+
+start_time = time.time()
+
+for (img, mask), i in zip(val_gen_test, range(val_size // batch_size)):
+    model.predict(img)
+    
+stop_time = time.time()
+
+sec_on_one_img = (stop_time - start_time) / val_size
+with open(callbacks_full_dir + "time.txt", "w") as f:
+    f.write(str(sec_on_one_img))
+    
+############################################ End #################################################
+
+end = "#############################################################################################"
+print(end)
+print(end)
+print(end)
