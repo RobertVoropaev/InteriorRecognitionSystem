@@ -11,8 +11,8 @@ class def_config:
     img_shape = 256
     classes_num = 31
 
-    batch_size = 4
-    epoch_num = 10
+    batch_size = 16
+    epoch_num = 100
     train_coef = 1
     learning_rate = 0.0001
 
