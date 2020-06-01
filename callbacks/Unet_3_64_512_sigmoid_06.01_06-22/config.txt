@@ -1,0 +1,17 @@
+batch_size=16
+callbacks_dir='../callbacks/'
+callbacks_monitor='val_jaccard_coef'
+classes_num=31
+cpu_threads_num=4
+epoch_num=100
+gpu_memory_limit=0.8
+img_shape=256
+is_load=False
+last_activation='sigmoid'
+learning_rate=0.0001
+loss_function='categorical_crossentropy'
+main_data_dir='../data/ADE20K_encoded/'
+model_class='Unet_3_64_512'
+model_type='sigmoid'
+train_coef=1
+weight_path=None
