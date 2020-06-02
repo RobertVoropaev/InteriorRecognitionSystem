@@ -341,6 +341,7 @@ def conv_block(filters, layers, input_layer):
         output_layer = BatchNormalization()(output_layer)
         output_layer = Activation("relu")(output_layer)
         
+    output_layer = Dropout(0.1)(output_layer)
         
     return output_layer
 
