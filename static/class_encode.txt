@@ -1,31 +1,17 @@
 0;0;-
-1;470;chair
+1;470|2678;chair|swivel chair
 2;1734|790|2713;painting, picture|drawing|tapestry, tapis
-3;349;cabinet
+3;349|2984;cabinet|wardrobe, closet, press
 4;2683|723;table|desk
 5;773;door
 6;1909;plant, flora, plant life
-7;164;bed
-8;1868|688;pillow|cushion
-9;56;armchair
-10;1830;person, individual, someone, somebody, mortal, soul
-11;2472;sofa, couch, lounge
-12;2177;rug, carpet, carpeting
-13;2387;sink
-14;2678;swivel chair
-15;2585;stool
-16;490;chest of drawers, chest, bureau, dresser
-17;2597;stove, kitchen stove, range, kitchen range, cooking stove
-18;590;computer, computing machine, computing device, data processor, electronic computer, information processing system
-19;154;bathtub, bathing tub, bath, tub
-20;2095;refrigerator, icebox
-21;2984;wardrobe, closet, press
-22;1550;microwave, microwave oven
-23;1582|2732|3108;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen
-24;1259;hood, exhaust hood
-25;1707;oven
-26;1406;laptop, laptop computer
-27;626|3086|1373|628;counter|work surface|kitchen island|countertop
-28;593;console table, console
-29;2006;printer
-30;2988;washer, automatic washer, washing machine
+7;164|2472|688|1868;bed|sofa, couch, lounge|cushion|pillow
+8;56;armchair
+9;2177;rug, carpet, carpeting
+10;2387;sink
+11;490;chest of drawers, chest, bureau, dresser
+12;2597;stove, kitchen stove, range, kitchen range, cooking stove
+13;154;bathtub, bathing tub, bath, tub
+14;1582|2732|3108|590;monitor, monitoring device|television receiver, television, television set, tv, tv set, idiot box, boob tube, telly, goggle box|screen, crt screen|computer, computing machine, computing device, data processor, electronic computer, information processing system
+15;626|3086|1373|628;counter|work surface|kitchen island|countertop
+16;2988;washer, automatic washer, washing machine
