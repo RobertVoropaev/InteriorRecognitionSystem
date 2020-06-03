@@ -364,25 +364,33 @@ def get_model(img_shape, classes_num, last_activation, layers_in_block):
     block3_pool = MaxPool2D(2)(block3_conv)
     
     block4_conv = conv_block(512, layers_in_block, block3_pool)
-    block4_upsa = UpSampling2D(2, interpolation="bilinear")(block4_conv)
-
-    block5_conc = Concatenate()([block3_conv, block4_upsa])    
+    block4_pool = MaxPool2D(2)(block4_conv)
     
-    block5_conv = conv_block(256, layers_in_block, block5_conc)
+    block5_conv = conv_block(1024, layers_in_block, block4_pool)
     block5_upsa = UpSampling2D(2, interpolation="bilinear")(block5_conv)
 
-    block6_conc = Concatenate()([block2_conv, block5_upsa])
-    
-    block6_conv = conv_block(128, layers_in_block, block6_conc)
+    block6_conc = Concatenate()([block4_conv, block5_upsa])    
+
+    block6_conv = conv_block(512, layers_in_block, block6_conc)
     block6_upsa = UpSampling2D(2, interpolation="bilinear")(block6_conv)
-
-    block7_conc = Concatenate()([block1_conv, block6_upsa])
     
-    block7_conv = conv_block(64, layers_in_block, block7_conc)
+    block7_conc = Concatenate()([block3_conv, block6_upsa])
+    
+    block7_conv = conv_block(256, layers_in_block, block7_conc)
+    block7_upsa = UpSampling2D(2, interpolation="bilinear")(block7_conv)
 
-    block8_output = Conv2D(classes_num, (1, 1), padding="same", activation=last_activation)(block7_conv)
+    block8_conc = Concatenate()([block2_conv, block7_upsa])
+    
+    block8_conv = conv_block(128, layers_in_block, block8_conc)
+    block8_upsa = UpSampling2D(2, interpolation="bilinear")(block8_conv)
 
-    return Model(inputs=block0_input, outputs=block8_output)
+    block9_conc = Concatenate()([block1_conv, block8_upsa])
+    
+    block9_conv = conv_block(64, layers_in_block, block9_conc)
+
+    block10_output = Conv2D(classes_num, (1, 1), padding="same", activation=last_activation)(block9_conv)
+
+    return Model(inputs=block0_input, outputs=block10_output)
 
 ############################################ Callbacks ############################################
 
