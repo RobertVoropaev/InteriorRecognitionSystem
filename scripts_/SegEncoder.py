@@ -144,6 +144,7 @@ class SegEncoder:
             dataset_size = self.pf.get_dataset_size(dir_src)
             print("Size: " + str(dataset_size))
 
+        zeros_masks = 0
         for file, path in self.pf.data_gen(dir_src, return_path=True):
             name, description, train_or_val, parts_num = self.pf.get_format(file)
 
@@ -153,20 +154,21 @@ class SegEncoder:
                 img_dst = img_dst_val
                 mask_dst = mask_dst_val
 
-            if description == 'img':
-                img_path = path + '/' + file
-                shutil.copyfile(img_path, img_dst + name + '.jpg')
-
-            elif description == 'seg':
+            if description == 'seg':
                 seg_path = path + '/' + file
                 seg = imread(seg_path)
                 new_seg = self.get_encoded_seg(seg)
+                if new_seg.sum() == 0:
+                    zeros_masks += 1
+                    continue
+                img_path = path + '/' + self.pf.get_img(file)
+                shutil.copyfile(img_path, img_dst + name + '.jpg')
                 imsave(mask_dst + name + '.png', new_seg, check_contrast=False)
 
                 if progress_step != 0:
                     progress_counter += 1
                     if progress_counter % progress_step == 0:
-                        print("Done: " + str(progress_counter))
+                        print("Done: " + str(progress_counter), "Zeros: " + str(zeros_masks))
 
     def get_bounding_box(self, seg, class_arr: list):
         """
