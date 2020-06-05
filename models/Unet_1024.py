@@ -24,7 +24,7 @@ class def_config:
     
     layers_in_block = 3
 
-    gpu_memory_limit = 0.8
+    gpu_memory_limit = 0.9
     cpu_threads_num = 4
 
     callbacks_monitor = "val_jaccard_coef"
@@ -171,7 +171,7 @@ random.seed(seed)
 
 
 ############################################ Session limit ###########################################
-
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
                         inter_op_parallelism_threads=args.cpu_threads_num)

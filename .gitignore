@@ -1,4 +1,5 @@
 .ipynb_checkpoints/
 data/
+callbacks/*/*.h5
 .idea/
 scripts_/__pycache__/
