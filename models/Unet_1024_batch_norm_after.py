@@ -346,8 +346,8 @@ def conv_block(filters, layers, input_layer):
     
     for i in range(layers):
         output_layer = Conv2D(filters, (3, 3), padding="same")(output_layer)
-        output_layer = BatchNormalization()(output_layer)
         output_layer = Activation("relu")(output_layer)
+        output_layer = BatchNormalization()(output_layer)
         
     return output_layer
 
