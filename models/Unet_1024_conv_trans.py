@@ -171,7 +171,7 @@ random.seed(seed)
 
 
 ############################################ Session limit ###########################################
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
                         inter_op_parallelism_threads=args.cpu_threads_num)
