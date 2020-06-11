@@ -26,7 +26,6 @@ class def_config:
 
     gpu_memory_limit = 0.9
     cpu_threads_num = 4
-    cuda_devices = "1"
 
     callbacks_monitor = "val_jaccard_coef"
     callbacks_data_format = "%m.%d_%H-%M"
@@ -115,10 +114,6 @@ if def_config.argparse_is_on:
     parser.add_argument('-ct', '--cpu_threads_num', type=int, required=False,
                         default=def_config.cpu_threads_num,
                         help="Максимальное количество потоков CPU")
-                        
-    parser.add_argument('-cvd', '--cuda_devices', type=str, required=False,
-                        default=def_config.cuda_devices,
-                        help="Номер видеокарты")
 
     ### Callbacks settings
 
@@ -176,7 +171,7 @@ random.seed(seed)
 
 
 ############################################ Session limit ###########################################
-os.environ["CUDA_VISIBLE_DEVICES"]=args.cuda_devices
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
                         inter_op_parallelism_threads=args.cpu_threads_num)
@@ -372,38 +367,30 @@ def get_model(img_shape, classes_num, last_activation, layers_in_block):
     block4_pool = MaxPool2D(2)(block4_conv)
     
     block5_conv = conv_block(1024, layers_in_block, block4_pool)
-    block5_upsa = MaxPool2D(2)(block5_conv)
+    block5_upsa = UpSampling2D(2, interpolation="bilinear")(block5_conv)
 
-    block6_conv = conv_block(2048, layers_in_block, block5_upsa)
-    block6_upsa = UpSampling2D(2, interpolation="bilinear")(block6_conv)
+    block6_conc = Concatenate()([block4_conv, block5_upsa])
+
+    block6_conv = conv_block(512, layers_in_block, block6_conc)
+    block6_upsa = UpSampling2D(2, interpolation="nearest")(block6_conv)
     
-    block7_conc = Concatenate()([block5_conv, block6_upsa])    
-
-    block7_conv = conv_block(1024, layers_in_block, block7_conc)
-    block7_upsa = UpSampling2D(2, interpolation="bilinear")(block7_conv)
+    block7_conc = Concatenate()([block3_conv, block6_upsa])
     
-    block8_conc = Concatenate()([block4_conv, block7_upsa])    
+    block7_conv = conv_block(256, layers_in_block, block7_conc)
+    block7_upsa = UpSampling2D(2, interpolation="nearest")(block7_conv)
 
-    block8_conv = conv_block(512, layers_in_block, block8_conc)
-    block8_upsa = UpSampling2D(2, interpolation="bilinear")(block8_conv)
+    block8_conc = Concatenate()([block2_conv, block7_upsa])
     
-    block9_conc = Concatenate()([block3_conv, block8_upsa])
+    block8_conv = conv_block(128, layers_in_block, block8_conc)
+    block8_upsa = UpSampling2D(2, interpolation="nearest")(block8_conv)
+
+    block9_conc = Concatenate()([block1_conv, block8_upsa])
     
-    block9_conv = conv_block(256, layers_in_block, block9_conc)
-    block9_upsa = UpSampling2D(2, interpolation="bilinear")(block9_conv)
+    block9_conv = conv_block(64, layers_in_block, block9_conc)
 
-    block10_conc = Concatenate()([block2_conv, block9_upsa])
-    
-    block10_conv = conv_block(128, layers_in_block, block10_conc)
-    block10_upsa = UpSampling2D(2, interpolation="bilinear")(block10_conv)
+    block10_output = Conv2D(classes_num, (1, 1), padding="same", activation=last_activation)(block9_conv)
 
-    block11_conc = Concatenate()([block1_conv, block10_upsa])
-    
-    block11_conv = conv_block(64, layers_in_block, block11_conc)
-
-    block12_output = Conv2D(classes_num, (1, 1), padding="same", activation=last_activation)(block11_conv)
-
-    return Model(inputs=block0_input, outputs=block12_output)
+    return Model(inputs=block0_input, outputs=block10_output)
 
 ############################################ Callbacks ############################################
 
