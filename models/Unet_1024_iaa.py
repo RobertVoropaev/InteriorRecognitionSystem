@@ -388,7 +388,7 @@ def data_gen_iaa(img_dir, mask_dir, classes_num, batch_size):
         yield img, mask
 
 
-train_gen = data_gen_iaa(img_train_dir, mask_train_dir, classes_num=classes_num, batch_size=batch_size)
+train_gen = data_gen(img_train_dir, mask_train_dir, classes_num=classes_num, batch_size=batch_size)
 val_gen = data_gen(img_val_dir, mask_val_dir, classes_num=classes_num, batch_size=batch_size)
 
 
