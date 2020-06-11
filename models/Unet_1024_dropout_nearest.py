@@ -23,6 +23,7 @@ class def_config:
     loss_function = "categorical_crossentropy"
     
     layers_in_block = 3
+    dropout_prob = 0.1
 
     gpu_memory_limit = 0.9
     cpu_threads_num = 4
@@ -104,6 +105,10 @@ if def_config.argparse_is_on:
     parser.add_argument('-lib', '--layers_in_block', type=int, required=False,
                         default=def_config.layers_in_block,
                         help="Количество")
+                        
+    parser.add_argument('-dp', '--dropout_prob', type=float, required=False,
+                        default=def_config.dropout_prob,
+                        help="Вероятность активации dropout слоёв")
 
     ### Memory limit
 
@@ -146,8 +151,6 @@ import time
 import numpy as np
 import cv2
 import random
-import imgaug.augmenters as iaa
-import imgaug as ia
 
 # Keras
 from keras.models import Sequential, Model
@@ -173,7 +176,7 @@ random.seed(seed)
 
 
 ############################################ Session limit ###########################################
-#os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
                         inter_op_parallelism_threads=args.cpu_threads_num)
@@ -250,6 +253,8 @@ loss_function = args.loss_function
 last_activation = args.last_activation
 
 layers_in_block = args.layers_in_block
+dropout_prob = args.dropout_prob
+
 
 is_load = args.is_load
 if is_load:
@@ -337,57 +342,6 @@ def data_gen(img_dir, mask_dir, classes_num, batch_size):
         yield img, mask
 
 
-def data_gen_iaa(img_dir, mask_dir, classes_num, batch_size):
-    img_folder = img_dir
-    mask_folder = mask_dir
-
-    img_list = os.listdir(img_folder)
-    random.shuffle(img_list)
-    img_dir_size = len(img_list)
-
-    for i in range(len(img_list)):
-        img_list[i] = img_list[i].split(".")[0]  # отделяем имя от формата
-
-    counter = 0
-    while (True):
-        img = np.zeros((batch_size, img_shape, img_shape, 3)).astype('float')
-        mask = np.zeros((batch_size, img_shape, img_shape, classes_num)).astype("uint8")
-
-        for i in range(counter, counter + batch_size):
-            train_img = cv2.imread(img_folder + '/' + img_list[i] + ".jpg") 
-            train_mask = cv2.imread(mask_folder + '/' + img_list[i] + ".png", cv2.IMREAD_GRAYSCALE)
-            
-            train_img = cv2.resize(train_img, (img_shape, img_shape))
-            train_mask = cv2.resize(train_mask, (img_shape, img_shape), interpolation=cv2.INTER_NEAREST)
-            
-            # ImgAug
-            seq = iaa.Sequential([
-#                iaa.Multiply(mul=(0.75, 1.25)),
-#                iaa.Affine(rotate=(-10, 10)),
-                iaa.Fliplr(0.5)
-            ])
-
-            train_img = np.array([train_img])
-            train_mask = np.array([train_mask])
-            train_img, train_mask = seq(images=train_img, segmentation_maps=train_mask)
-            train_img = train_img[0] / 255.
-            train_mask = train_mask[0]
-
-            train_mask = train_mask.reshape(img_shape, img_shape, 1)
-            train_mask = to_categorical(train_mask, num_classes=classes_num)
-
-            img[i - counter] = train_img
-            mask[i - counter] = train_mask
-
-        counter += batch_size
-
-        if counter + batch_size >= img_dir_size:
-            counter = 0
-            random.shuffle(img_list)
-
-        yield img, mask
-
-
 train_gen = data_gen(img_train_dir, mask_train_dir, classes_num=classes_num, batch_size=batch_size)
 val_gen = data_gen(img_val_dir, mask_val_dir, classes_num=classes_num, batch_size=batch_size)
 
@@ -400,7 +354,8 @@ def conv_block(filters, layers, input_layer):
     for i in range(layers):
         output_layer = Conv2D(filters, (3, 3), padding="same")(output_layer)
         output_layer = Activation("relu")(output_layer)
-        
+    
+    output_layer = Dropout(dropout_prob)(output_layer)
     return output_layer
 
 
@@ -420,22 +375,22 @@ def get_model(img_shape, classes_num, last_activation, layers_in_block):
     block4_pool = MaxPool2D(2)(block4_conv)
     
     block5_conv = conv_block(1024, layers_in_block, block4_pool)
-    block5_upsa = UpSampling2D(2, interpolation="bilinear")(block5_conv)
+    block5_upsa = UpSampling2D(2, interpolation="nearest")(block5_conv)
 
     block6_conc = Concatenate()([block4_conv, block5_upsa])    
 
     block6_conv = conv_block(512, layers_in_block, block6_conc)
-    block6_upsa = UpSampling2D(2, interpolation="bilinear")(block6_conv)
+    block6_upsa = UpSampling2D(2, interpolation="nearest")(block6_conv)
     
     block7_conc = Concatenate()([block3_conv, block6_upsa])
     
     block7_conv = conv_block(256, layers_in_block, block7_conc)
-    block7_upsa = UpSampling2D(2, interpolation="bilinear")(block7_conv)
+    block7_upsa = UpSampling2D(2, interpolation="nearest")(block7_conv)
 
     block8_conc = Concatenate()([block2_conv, block7_upsa])
     
     block8_conv = conv_block(128, layers_in_block, block8_conc)
-    block8_upsa = UpSampling2D(2, interpolation="bilinear")(block8_conv)
+    block8_upsa = UpSampling2D(2, interpolation="nearest")(block8_conv)
 
     block9_conc = Concatenate()([block1_conv, block8_upsa])
     
