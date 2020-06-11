@@ -362,8 +362,8 @@ def data_gen_iaa(img_dir, mask_dir, classes_num, batch_size):
             
             # ImgAug
             seq = iaa.Sequential([
-                iaa.Multiply(mul=(0.75, 1.25)),
-                iaa.Affine(rotate=(-10, 10)),
+#                iaa.Multiply(mul=(0.75, 1.25)),
+#                iaa.Affine(rotate=(-10, 10)),
                 iaa.Fliplr(0.5)
             ])
 
