@@ -158,7 +158,7 @@ from keras.layers import Dense, Flatten, Activation, Input
 from keras.layers import Conv2D, MaxPool2D, UpSampling2D, Conv2DTranspose
 from keras.layers import Dropout, BatchNormalization, Concatenate
 from keras.optimizers import Adam, SGD, RMSprop
-from keras.callbacks import ModelCheckpoint, CSVLogger
+from keras.callbacks import ModelCheckpoint, CSVLogger, LearningRateScheduler
 
 # Preprocessing
 from keras.utils import Sequence, to_categorical
@@ -436,12 +436,18 @@ def get_callbacks(dir_path, callbacks_monitor):
                        append=False)
 
     # переменная скорость обучения
-    def exponential(epoch, lr_start=1e-3, lr_stop=1e-5, max_epoch=300):
-        #llr_start * e^(−k * epoch)
-        k = np.log(lr_start / lr_stop) / max_epoch
-        return lr_start * np.exp(-k * epoch)
+    def exponential(epoch, lr):
+        #lr_start * e^(−k * epoch)
+        lr_start=1e-3
+        lr_stop=1e-5
+        max_epoch=300
 
-    lr_scheduler = tf.keras.callbacks.LearningRateScheduler(exponential)
+        k = np.log(lr_start / lr_stop) / max_epoch
+        lr = lr_start * np.exp(-k * epoch)
+        print("lr: " + str(lr))
+        return lr
+
+    lr_scheduler = LearningRateScheduler(exponential)
 
     return [best_w_loss, best_w_jaccard, last_w, logger, lr_scheduler]
 
