@@ -6,12 +6,12 @@ from matplotlib import pyplot as plt
 
 from skimage.io import imread, imsave, imshow
 
-from scripts_.PathFinder import PathFinder
+from ipynb_scripts.PathFinder import PathFinder
 
 
 class SegEncoder:
     def __init__(self,
-                 objectnames_path: str = "static/objectnames.txt"):
+                 objectnames_path: str = "static_data/objectnames.txt"):
         """
             Конструктор класса
         ------------------------------------------------------
@@ -74,7 +74,7 @@ class SegEncoder:
 
     def get_encoded_seg(self, seg):
         """
-            Перекодируут маску в новую по правилам загруженного словаря
+            Перекодирует маску в новую по правилам загруженного словаря
         ------------------------------------------------------
         Input:
             * seg - маска изображения с пикселями от 0 до 255

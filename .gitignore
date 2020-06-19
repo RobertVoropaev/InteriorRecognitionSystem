@@ -3,4 +3,4 @@ data/
 demo/
 callbacks/*/*.h5
 .idea/
-scripts_/__pycache__/
+*/__pycache__/

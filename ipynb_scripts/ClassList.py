@@ -1,5 +1,5 @@
-from scripts_.PathFinder import PathFinder
-from scripts_.SegEncoder import SegEncoder
+from ipynb_scripts.PathFinder import PathFinder
+from ipynb_scripts.SegEncoder import SegEncoder
 
 
 class ClassList:
@@ -7,9 +7,9 @@ class ClassList:
                  dir_path: str = "dir_path",
                  min_obj: int = 50,
                  progress_step: int = 0,
-                 objectnames_path: str = "static/objectnames.txt",
+                 objectnames_path: str = "static_data/objectnames.txt",
                  load_class_encode: bool = False,
-                 class_encode_path: str = "static/class_encode.txt"
+                 class_encode_path: str = "static_data/class_encode.txt"
                  ):
         """
             Констуктор создания нового списка классов
