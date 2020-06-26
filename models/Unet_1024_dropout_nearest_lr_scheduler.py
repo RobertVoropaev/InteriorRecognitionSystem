@@ -176,7 +176,7 @@ random.seed(seed)
 
 
 ############################################ Session limit ###########################################
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=args.cpu_threads_num,
                         inter_op_parallelism_threads=args.cpu_threads_num)
@@ -438,7 +438,7 @@ def get_callbacks(dir_path, callbacks_monitor):
     # переменная скорость обучения
     def exponential(epoch, lr):
         #lr_start * e^(−k * epoch)
-        lr_start=1e-3
+        lr_start=1e-4
         lr_stop=1e-5
         max_epoch=300
 
